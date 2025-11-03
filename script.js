@@ -54,7 +54,7 @@ function addFeatureButtonListeners() {
             }
 
             if (featureText === 'Criar imagem') {
-                displayMessage('Que imagem eu quero gerar?', 'ai');
+                displayMessage('Qual imagem você gostaria de criar?', 'ai');
                 isWaitingForImagePrompt = true;
             } else {
                 chatInput.value = featureText;
