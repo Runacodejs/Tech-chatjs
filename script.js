@@ -70,6 +70,42 @@ function sendMessage() {
 }
 
 async function sendMessageToOpenAI(message) {
+    const lowerCaseMessage = message.toLowerCase();
+    let systemMessage = 'You are a helpful assistant that responds in Portuguese.';
+
+    if (lowerCaseMessage.startsWith('criar imagem')) {
+        // Handle image generation
+        const prompt = message.substring('criar imagem'.length).trim();
+        const response = await fetch('https://api.openai.com/v1/images/generations', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'dall-e-3',
+                prompt: prompt,
+                n: 1,
+                size: '1024x1024'
+            })
+        });
+        const data = await response.json();
+        const imageUrl = data.data[0].url;
+        displayMessage(imageUrl, 'ai');
+        return;
+    } 
+
+    if (lowerCaseMessage.startsWith('programar')) {
+        systemMessage = 'You are a helpful assistant that responds in Portuguese and helps with programming.';
+    } else if (lowerCaseMessage.startsWith('ajudar a escrever')) {
+        systemMessage = 'You are a helpful assistant that responds in Portuguese and helps with writing.';
+    } else if (lowerCaseMessage.startsWith('resumir texto')) {
+        systemMessage = 'You are a helpful assistant that responds in Portuguese and helps with summarizing text.';
+    } else if (lowerCaseMessage.startsWith('aconselhar')) {
+        systemMessage = 'You are a helpful assistant that responds in Portuguese and gives advice.';
+    }
+
+    // Handle chat completion
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -78,17 +114,41 @@ async function sendMessageToOpenAI(message) {
         },
         body: JSON.stringify({
             model: 'gpt-3.5-turbo',
-            messages: [{ role: 'user', content: message }]
+            messages: [
+                { role: 'system', content: systemMessage },
+                { role: 'user', content: message }
+            ]
         })
     });
     const data = await response.json();
     displayMessage(data.choices[0].message.content, 'ai');
 }
 
+
 function displayMessage(message, sender) {
     const mainContent = document.querySelector('.main-content');
     const messageElement = document.createElement('div');
-    messageElement.textContent = message;
     messageElement.classList.add('message', `${sender}-message`);
+
+    if (message.startsWith('http')) {
+        const image = document.createElement('img');
+        image.src = message;
+        image.alt = "Generated AI Image";
+        image.style.maxWidth = "50%";
+        messageElement.appendChild(image);
+    } else if (message.includes('```')) {
+        const pre = document.createElement('pre');
+        const code = document.createElement('code');
+        const codeRegex = /```(.*?)```/s;
+        const codeMatch = message.match(codeRegex);
+        if (codeMatch) {
+            code.textContent = codeMatch[1];
+            pre.appendChild(code);
+            messageElement.appendChild(pre);
+        }
+    } else {
+        messageElement.textContent = message;
+    }
+
     mainContent.appendChild(messageElement);
 }
