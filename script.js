@@ -212,15 +212,6 @@ async function sendMessageToBackend(message, image_data = null) {
         const prompt = message.substring('criar imagem'.length).trim();
         requestBody = { type: 'image', prompt: prompt };
     } else {
-        if (lowerCaseMessage.startsWith('programar')) {
-            systemMessage = 'Você é um programador especialista e assistente de codificação. Seu objetivo é fornecer códigos de alta qualidade, bem documentados e eficientes. Você deve ser capaz de criar desde pequenos trechos de código até projetos completos, explicar conceitos de programação e ajudar a depurar e refatorar código. Responda em português e siga as melhores práticas de desenvolvimento de software.';
-        } else if (lowerCaseMessage.startsWith('ajudar a escrever')) {
-            systemMessage = 'Você é um escritor e editor experiente. Forneça textos claros, concisos e bem escritos, seguindo as melhores práticas da escrita profissional. Responda em português.';
-        } else if (lowerCaseMessage.startsWith('resumir texto')) {
-            systemMessage = 'Você é um especialista em análise e síntese de informações. Forneça resumos precisos e informativos, destacando os pontos-chave do texto. Responda em português.';
-        } else if (lowerCaseMessage.startsWith('aconselhar')) {
-            systemMessage = 'Você é um conselheiro experiente e especialista em desenvolvimento pessoal e profissional. Forneça conselhos práticos, bem fundamentados e acionáveis. Responda em português.';
-        }
         requestBody = { type: 'chat', messages: chatHistory, systemMessage: systemMessage };
     }
 
@@ -354,4 +345,55 @@ function removeTypingIndicator() {
     if (typingIndicator) {
         typingIndicator.remove();
     }
+}
+
+// --------------------------------------
+// Lógica do Microfone
+// --------------------------------------
+const micIcon = document.querySelector('.mic-icon');
+const waveIcon = document.querySelector('.wave-icon');
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (SpeechRecognition) {
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.lang = 'pt-BR';
+
+    micIcon.addEventListener('click', () => {
+        if (micIcon.classList.contains('active')) {
+            recognition.stop();
+        } else {
+            recognition.start();
+        }
+    });
+
+    recognition.onstart = () => {
+        micIcon.style.display = 'none';
+        waveIcon.style.display = 'block';
+    };
+
+    recognition.onend = () => {
+        micIcon.style.display = 'block';
+        waveIcon.style.display = 'none';
+    };
+
+    recognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+                transcript += event.results[i][0].transcript;
+            }
+        }
+        chatInput.value = transcript;
+        chatInput.dispatchEvent(new Event('input'));
+    };
+
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+    };
+
+} else {
+    console.log('Speech Recognition not supported');
+    voiceIcons.style.display = 'none';
 }

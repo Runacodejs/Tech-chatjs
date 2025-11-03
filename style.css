@@ -405,6 +405,10 @@ body {
     cursor: pointer;
 }
 
+.bottom-bar .wave-icon {
+    display: none;
+}
+
 .send-button {
     position: absolute;
     right: 15px;
