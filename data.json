@@ -1,0 +1,10 @@
+
+{
+  "project": "AI Assistant",
+  "version": "1.0.0",
+  "features": [
+    "Chat with OpenAI",
+    "Feature buttons",
+    "JSON support"
+  ]
+}
