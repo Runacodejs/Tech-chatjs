@@ -43,9 +43,19 @@ const featureButtons = document.querySelectorAll('.feature-button');
 featureButtons.forEach(button => {
     button.addEventListener('click', (event) => {
         const featureText = event.currentTarget.textContent.trim();
-        chatInput.value = featureText;
-        chatInput.dispatchEvent(new Event('input'));
-        sendMessage();
+
+        if (featureText === 'Criar imagem') {
+            const imagePrompt = prompt("O que você gostaria de criar?");
+            if (imagePrompt) {
+                chatInput.value = `criar imagem ${imagePrompt}`;
+                chatInput.dispatchEvent(new Event('input'));
+                sendMessage();
+            }
+        } else {
+            chatInput.value = featureText;
+            chatInput.dispatchEvent(new Event('input'));
+            sendMessage();
+        }
     });
 });
 
@@ -59,11 +69,12 @@ sendButton.addEventListener('click', sendMessage);
 function sendMessage() {
     const message = chatInput.value;
     if (!apiKey) {
-        apiKey = prompt("Please enter your OpenAI API key:");
+        apiKey = prompt("Por favor, insira sua chave de API da OpenAI:");
         localStorage.setItem('openai_api_key', apiKey);
     }
     if (message) {
         displayMessage(message, 'user');
+        displayTypingIndicator(); // Show typing indicator
         sendMessageToOpenAI(message);
         chatInput.value = '';
     }
@@ -71,7 +82,7 @@ function sendMessage() {
 
 async function sendMessageToOpenAI(message) {
     const lowerCaseMessage = message.toLowerCase();
-    let systemMessage = 'You are a helpful assistant that responds in Portuguese.';
+    let systemMessage = 'Você é um assistente prestativo que responde em português.';
 
     if (lowerCaseMessage.startsWith('criar imagem')) {
         // Handle image generation
@@ -90,19 +101,20 @@ async function sendMessageToOpenAI(message) {
             })
         });
         const data = await response.json();
+        removeTypingIndicator(); // Remove typing indicator
         const imageUrl = data.data[0].url;
         displayMessage(imageUrl, 'ai');
         return;
     } 
 
     if (lowerCaseMessage.startsWith('programar')) {
-        systemMessage = 'You are a helpful assistant that responds in Portuguese and helps with programming.';
+        systemMessage = 'Você é um assistente prestativo que responde em português e ajuda com programação.';
     } else if (lowerCaseMessage.startsWith('ajudar a escrever')) {
-        systemMessage = 'You are a helpful assistant that responds in Portuguese and helps with writing.';
+        systemMessage = 'Você é um assistente prestativo que responde em português e ajuda na escrita.';
     } else if (lowerCaseMessage.startsWith('resumir texto')) {
-        systemMessage = 'You are a helpful assistant that responds in Portuguese and helps with summarizing text.';
+        systemMessage = 'Você é um assistente prestativo que responde em português e ajuda a resumir textos.';
     } else if (lowerCaseMessage.startsWith('aconselhar')) {
-        systemMessage = 'You are a helpful assistant that responds in Portuguese and gives advice.';
+        systemMessage = 'Você é um assistente prestativo que responde em português e dá conselhos.';
     }
 
     // Handle chat completion
@@ -121,9 +133,9 @@ async function sendMessageToOpenAI(message) {
         })
     });
     const data = await response.json();
+    removeTypingIndicator(); // Remove typing indicator
     displayMessage(data.choices[0].message.content, 'ai');
 }
-
 
 function displayMessage(message, sender) {
     const mainContent = document.querySelector('.main-content');
@@ -145,10 +157,45 @@ function displayMessage(message, sender) {
             code.textContent = codeMatch[1];
             pre.appendChild(code);
             messageElement.appendChild(pre);
+
+            const copyButton = document.createElement('button');
+            copyButton.textContent = 'Copiar';
+            copyButton.className = 'copy-button';
+            copyButton.onclick = () => {
+                navigator.clipboard.writeText(code.textContent);
+                copyButton.textContent = 'Copiado!';
+                setTimeout(() => {
+                    copyButton.textContent = 'Copiar';
+                }, 2000);
+            };
+            messageElement.appendChild(copyButton);
         }
     } else {
         messageElement.textContent = message;
     }
 
     mainContent.appendChild(messageElement);
+    mainContent.scrollTop = mainContent.scrollHeight;
+}
+
+function displayTypingIndicator() {
+    const mainContent = document.querySelector('.main-content');
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message', 'typing-indicator-container');
+    messageElement.innerHTML = `
+        <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    `;
+    mainContent.appendChild(messageElement);
+    mainContent.scrollTop = mainContent.scrollHeight;
+}
+
+function removeTypingIndicator() {
+    const typingIndicator = document.querySelector('.typing-indicator-container');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
 }
