@@ -178,7 +178,7 @@ async function sendMessageToBackend(message) {
         };
     } else {
         if (lowerCaseMessage.startsWith('programar')) {
-            systemMessage = 'Você é uma engenheira de software sênior especializada em criar projetos de software completos. Sua tarefa é gerar a estrutura de arquivos completa, o código para cada arquivo e uma explicação detalhada da arquitetura do projeto. Responda em português e siga as melhores práticas de engenharia de software.';
+            systemMessage = 'Você é um programador especialista e assistente de codificação. Seu objetivo é fornecer códigos de alta qualidade, bem documentados e eficientes. Você deve ser capaz de criar desde pequenos trechos de código até projetos completos, explicar conceitos de programação e ajudar a depurar e refatorar código. Responda em português e siga as melhores práticas de desenvolvimento de software.';
         } else if (lowerCaseMessage.startsWith('ajudar a escrever')) {
             systemMessage = 'Você é um escritor e editor experiente. Forneça textos claros, concisos e bem escritos, seguindo as melhores práticas da escrita profissional. Responda em português.';
         } else if (lowerCaseMessage.startsWith('resumir texto')) {
