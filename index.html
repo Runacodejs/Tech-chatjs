@@ -4,160 +4,234 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assistente IA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            background-color: #000; /* Fundo preto */
+            color: #fff; /* Texto branco */
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
+            justify-content: space-between; /* Espaço entre header, content e footer */
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        h1 {
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        p {
-            margin-bottom: 30px;
-            font-size: 18px;
-            color: #555;
-            text-align: center;
-        }
-
-        .search-container {
+        /* Top Bar */
+        .top-bar {
+            width: 100%;
             display: flex;
-            width: 100%;
-            max-width: 600px;
-            position: relative;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            margin-bottom: 30px;
         }
 
-        .search-container button {
+        .top-bar .menu-icon {
+            background: none;
             border: none;
-            cursor: pointer;
-            font-size: 18px;
-        }
-
-        .search-container button.config {
-            padding: 12px 15px;
-            background-color: #777;
-            color: white;
-            border-radius: 5px 0 0 5px;
-            position: relative;
-        }
-
-        /* Menu suspenso */
-        .config-menu {
-            display: none;
-            position: absolute;
-            top: 50px;
-            left: 0;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 10;
-            width: 150px;
-            flex-direction: column;
-        }
-
-        .config-menu button {
-            background-color: white;
-            color: #333;
-            border: none;
-            padding: 10px 15px;
-            text-align: left;
-            width: 100%;
+            color: #fff;
+            font-size: 24px;
             cursor: pointer;
         }
 
-        .config-menu button:hover {
-            background-color: #f0f0f0;
+        .top-bar .upgrade-button {
+            background-color: #5d3fd3; /* Cor roxa */
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
         }
 
-        .search-container button.add {
-            padding: 12px 15px;
-            background-color: #2196F3;
-            color: white;
-            border-left: none;
-        }
-
-        .search-container input[type="text"] {
-            flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ccc;
-            border-left: none;
-            border-right: none;
+        .top-bar .upgrade-button i {
             font-size: 16px;
         }
 
-        .search-container button.search {
-            padding: 12px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 0 5px 5px 0;
+        .top-bar .refresh-icon {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
         }
 
-        .search-container button.search:hover {
-            background-color: #45a049;
-        }
-
-        .features {
-            margin-top: 20px;
+        /* Main Content */
+        .main-content {
+            flex-grow: 1; /* Permite que o conteúdo principal ocupe o espaço restante */
             display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* Centraliza verticalmente o conteúdo */
+            text-align: center;
+            padding: 20px;
         }
 
-        .feature {
-            background-color: #fff;
-            padding: 10px 15px;
-            border-radius: 8px;
-            box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+        .main-content h1 {
+            font-size: 28px;
+            margin-bottom: 40px;
+            color: #fff;
         }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Duas colunas */
+            gap: 15px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .feature-button {
+            background-color: #222; /* Fundo cinza escuro para os botões */
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 10px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: background-color 0.2s ease;
+        }
+
+        .feature-button:hover {
+            background-color: #333;
+        }
+
+        .feature-button i {
+            font-size: 18px;
+        }
+        
+        /* Botão "Mais" diferente */
+        .feature-button.more {
+            background-color: #222;
+            color: #fff;
+            font-size: 15px;
+            padding: 15px 10px;
+        }
+
+        /* Bottom Bar */
+        .bottom-bar {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 10px;
+            background-color: #000; /* Garante que a barra inferior seja preta */
+        }
+
+        .bottom-bar .add-button {
+            background-color: #222;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .bottom-bar .search-input-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            background-color: #222;
+            border-radius: 25px;
+            padding: 8px 15px;
+            max-width: 450px;
+        }
+
+        .bottom-bar input[type="text"] {
+            flex-grow: 1;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            padding: 5px 0;
+            outline: none;
+        }
+
+        .bottom-bar input[type="text"]::placeholder {
+            color: #888;
+        }
+
+        .bottom-bar .mic-icon,
+        .bottom-bar .wave-icon {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 20px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        /* Responsividade básica */
+        @media (max-width: 480px) {
+            .feature-grid {
+                grid-template-columns: 1fr; /* Uma coluna em telas menores */
+            }
+            .top-bar .upgrade-button {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+            .bottom-bar .search-input-container {
+                padding: 6px 12px;
+            }
+        }
+
     </style>
 </head>
 <body>
-    <h1>Como posso ajudar?</h1>
-    <p>Criar imagens, Analisar dados, Sugerir, Surpreender, Programar</p>
+    <div class="top-bar">
+        <button class="menu-icon"><i class="fas fa-bars"></i></button>
+        <button class="upgrade-button">
+            <i class="fas fa-gem"></i> Fazer upgrade
+        </button>
+        <button class="refresh-icon"><i class="fas fa-sync-alt"></i></button>
+    </div>
 
-    <div class="search-container">
-        <button class="config" onclick="toggleConfigMenu()">⋮</button>
-        <div class="config-menu" id="configMenu">
-            <button>Novo Chat</button>
-            <button>Novo Projeto</button>
+    <div class="main-content">
+        <h1>Como posso ajudar?</h1>
+        <div class="feature-grid">
+            <button class="feature-button">
+                <i class="fas fa-image"></i> Criar imagem
+            </button>
+            <button class="feature-button">
+                <i class="fas fa-pencil-alt"></i> Ajudar a escrever
+            </button>
+            <button class="feature-button">
+                <i class="fas fa-file-alt"></i> Resumir texto
+            </button>
+            <button class="feature-button">
+                <i class="fas fa-graduation-cap"></i> Aconselhar
+            </button>
+            <button class="feature-button more">
+                Mais
+            </button>
         </div>
-        <button class="add">+</button>
-        <input type="text" placeholder="Digite sua pergunta ou comando...">
-        <button class="search">Pesquisar</button>
     </div>
 
-    <div class="features">
-        <div class="feature">Criar imagens</div>
-        <div class="feature">Analisar dados</div>
-        <div class="feature">Sugerir</div>
-        <div class="feature">Surpreender</div>
-        <div class="feature">Programar</div>
+    <div class="bottom-bar">
+        <button class="add-button"><i class="fas fa-plus"></i></button>
+        <div class="search-input-container">
+            <input type="text" placeholder="Ask ChatGPT">
+            <button class="mic-icon"><i class="fas fa-microphone"></i></button>
+            <button class="wave-icon"><i class="fas fa-waveform"></i></button>
+        </div>
     </div>
-
-    <script>
-        function toggleConfigMenu() {
-            const menu = document.getElementById('configMenu');
-            menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
-        }
-
-        // Fechar o menu se clicar fora
-        window.addEventListener('click', function(e) {
-            const menu = document.getElementById('configMenu');
-            const button = document.querySelector('.config');
-            if (!menu.contains(e.target) && e.target !== button) {
-                menu.style.display = 'none';
-            }
-        });
-    </script>
 </body>
-  </html>
+</html>
