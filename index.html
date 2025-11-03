@@ -6,28 +6,139 @@
     <title>Assistente IA</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        :root {
+            --sidebar-width: 250px;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background-color: #000; /* Fundo preto */
-            color: #fff; /* Texto branco */
+            background-color: #000;
+            color: #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between; /* Espaço entre header, content e footer */
+            justify-content: space-between;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 0; /* Remove o padding do body principal */
             box-sizing: border-box;
+            overflow-x: hidden; /* Evita scroll horizontal na transição */
+            position: relative; /* Para o overlay */
         }
 
-        /* Top Bar */
+        /* -------------------------------------- */
+        /* Sidebar Styles */
+        /* -------------------------------------- */
+        .sidebar {
+            height: 100%;
+            width: var(--sidebar-width);
+            position: fixed;
+            z-index: 20;
+            top: 0;
+            left: 0;
+            background-color: #000;
+            padding: 20px;
+            padding-top: 50px;
+            box-sizing: border-box;
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%); /* Escondido por padrão */
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar.open {
+            transform: translateX(0); /* Visível */
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 10px;
+            margin: 10px 0;
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .sidebar-item:hover {
+            background-color: #1a1a1a;
+        }
+
+        .sidebar-item i {
+            font-size: 22px;
+            margin-right: 15px;
+            width: 30px; /* Garante que os ícones fiquem alinhados */
+            text-align: center;
+        }
+
+        /* Input de Busca na Sidebar */
+        .sidebar .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: #2e2e2e; /* Fundo mais claro para a busca */
+            border-radius: 25px;
+            padding: 10px 15px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar .search-bar input {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            flex-grow: 1;
+            padding: 0 10px;
+            outline: none;
+        }
+
+        .sidebar .search-bar i.fa-search {
+            color: #ccc;
+            font-size: 18px;
+        }
+        
+        /* Botão Editar */
+        .sidebar .edit-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        /* Overlay para escurecer o fundo */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10;
+            display: none;
+        }
+
+        /* -------------------------------------- */
+        /* Main Content Styles (Mantido do anterior) */
+        /* -------------------------------------- */
+
+        .page-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+        }
+
         .top-bar {
             width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 10px;
-            margin-bottom: 30px;
+            padding: 20px 20px 0 20px; /* Ajuste o padding para o conteúdo principal */
         }
 
         .top-bar .menu-icon {
@@ -36,10 +147,11 @@
             color: #fff;
             font-size: 24px;
             cursor: pointer;
+            z-index: 1;
         }
 
         .top-bar .upgrade-button {
-            background-color: #5d3fd3; /* Cor roxa */
+            background-color: #5d3fd3;
             color: #fff;
             border: none;
             border-radius: 20px;
@@ -51,10 +163,6 @@
             cursor: pointer;
         }
 
-        .top-bar .upgrade-button i {
-            font-size: 16px;
-        }
-
         .top-bar .refresh-icon {
             background: none;
             border: none;
@@ -63,13 +171,12 @@
             cursor: pointer;
         }
 
-        /* Main Content */
         .main-content {
-            flex-grow: 1; /* Permite que o conteúdo principal ocupe o espaço restante */
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center; /* Centraliza verticalmente o conteúdo */
+            justify-content: center;
             text-align: center;
             padding: 20px;
         }
@@ -82,14 +189,14 @@
 
         .feature-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Duas colunas */
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             max-width: 400px;
             width: 100%;
         }
 
         .feature-button {
-            background-color: #222; /* Fundo cinza escuro para os botões */
+            background-color: #222;
             color: #fff;
             border: none;
             border-radius: 12px;
@@ -107,12 +214,7 @@
         .feature-button:hover {
             background-color: #333;
         }
-
-        .feature-button i {
-            font-size: 18px;
-        }
         
-        /* Botão "Mais" diferente */
         .feature-button.more {
             background-color: #222;
             color: #fff;
@@ -120,14 +222,13 @@
             padding: 15px 10px;
         }
 
-        /* Bottom Bar */
         .bottom-bar {
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 15px 10px;
-            background-color: #000; /* Garante que a barra inferior seja preta */
+            padding: 15px 20px; /* Adiciona padding lateral */
+            background-color: #000;
         }
 
         .bottom-bar .add-button {
@@ -182,56 +283,117 @@
         /* Responsividade básica */
         @media (max-width: 480px) {
             .feature-grid {
-                grid-template-columns: 1fr; /* Uma coluna em telas menores */
+                grid-template-columns: 1fr;
             }
             .top-bar .upgrade-button {
                 padding: 8px 15px;
                 font-size: 14px;
-            }
-            .bottom-bar .search-input-container {
-                padding: 6px 12px;
             }
         }
 
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <button class="menu-icon"><i class="fas fa-bars"></i></button>
-        <button class="upgrade-button">
-            <i class="fas fa-gem"></i> Fazer upgrade
-        </button>
-        <button class="refresh-icon"><i class="fas fa-sync-alt"></i></button>
+    
+    <div class="sidebar" id="sidebar">
+        
+        <button class="edit-icon"><i class="fas fa-pencil-alt"></i></button>
+
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Buscar">
+        </div>
+
+        <a href="#" class="sidebar-item">
+            <i class="fas fa-edit"></i> Novo chat
+        </a>
+        <a href="#" class="sidebar-item">
+            <i class="fas fa-images"></i> Galeria
+        </a>
+        <a href="#" class="sidebar-item">
+            <i class="fas fa-th-large"></i> GPTs
+        </a>
+        <a href="#" class="sidebar-item">
+            <i class="fas fa-folder-plus"></i> Novo projeto
+        </a>
+        
     </div>
 
-    <div class="main-content">
-        <h1>Como posso ajudar?</h1>
-        <div class="feature-grid">
-            <button class="feature-button">
-                <i class="fas fa-image"></i> Criar imagem
+    <div class="overlay" id="overlay"></div>
+
+    <div class="page-container" id="pageContainer">
+        
+        <div class="top-bar">
+            <button class="menu-icon" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
             </button>
-            <button class="feature-button">
-                <i class="fas fa-pencil-alt"></i> Ajudar a escrever
+            <button class="upgrade-button">
+                <i class="fas fa-gem"></i> Fazer upgrade
             </button>
-            <button class="feature-button">
-                <i class="fas fa-file-alt"></i> Resumir texto
-            </button>
-            <button class="feature-button">
-                <i class="fas fa-graduation-cap"></i> Aconselhar
-            </button>
-            <button class="feature-button more">
-                Mais
-            </button>
+            <button class="refresh-icon"><i class="fas fa-sync-alt"></i></button>
         </div>
+    
+        
+        <div class="main-content">
+            <h1>Como posso ajudar?</h1>
+            <div class="feature-grid">
+                <button class="feature-button">
+                    <i class="fas fa-image"></i> Criar imagem
+                </button>
+                <button class="feature-button">
+                    <i class="fas fa-pencil-alt"></i> Ajudar a escrever
+                </button>
+                <button class="feature-button">
+                    <i class="fas fa-file-alt"></i> Resumir texto
+                </button>
+                <button class="feature-button">
+                    <i class="fas fa-graduation-cap"></i> Aconselhar
+                </button>
+                <button class="feature-button more">
+                    Mais
+                </button>
+            </div>
+        </div>
+    
+        
+        <div class="bottom-bar">
+            <button class="add-button"><i class="fas fa-plus"></i></button>
+            <div class="search-input-container">
+                <input type="text" placeholder="Ask Tech Chat"> 
+                
+                <button class="mic-icon"><i class="fas fa-microphone"></i></button>
+                <button class="wave-icon"><i class="fas fa-waveform"></i></button>
+            </div>
+        </div>
+
     </div>
 
-    <div class="bottom-bar">
-        <button class="add-button"><i class="fas fa-plus"></i></button>
-        <div class="search-input-container">
-            <input type="text" placeholder="Ask ChatGPT">
-            <button class="mic-icon"><i class="fas fa-microphone"></i></button>
-            <button class="wave-icon"><i class="fas fa-waveform"></i></button>
-        </div>
-    </div>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            
+            // Alterna a classe 'open' na sidebar
+            sidebar.classList.toggle('open');
+            
+            // Alterna a visibilidade do overlay
+            if (sidebar.classList.contains('open')) {
+                overlay.style.display = 'block';
+            } else {
+                overlay.style.display = 'none';
+            }
+        }
+
+        // Fecha a sidebar ao clicar no overlay
+        document.getElementById('overlay').addEventListener('click', toggleSidebar);
+
+        // Opcional: Fechar a sidebar ao clicar em um item (descomente se quiser)
+        /*
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', toggleSidebar);
+        });
+        */
+    </script>
 </body>
-</html>
+    </html>
+            
