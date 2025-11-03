@@ -67,6 +67,27 @@ body {
     background-color: #666;
 }
 
+.image-container {
+    position: relative;
+}
+
+.download-button {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Typing Indicator */
 .typing-indicator-container {
     align-self: flex-start;

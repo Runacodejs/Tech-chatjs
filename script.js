@@ -244,16 +244,38 @@ function displayMessage(message, sender) {
         }
     }
 
-    if (message.startsWith('http') || message.startsWith('data:image')) {
+    if ((message.startsWith('http') || message.startsWith('data:image')) && sender === 'ai') {
+        const imageContainer = document.createElement('div');
+        imageContainer.classList.add('image-container');
+
+        const image = document.createElement('img');
+        image.src = message;
+        image.alt = "Imagem Gerada por IA";
+        image.style.maxWidth = "50%";
+        imageContainer.appendChild(image);
+
+        const downloadButton = document.createElement('button');
+        downloadButton.innerHTML = '<i class="fas fa-download"></i>';
+        downloadButton.className = 'download-button';
+        downloadButton.onclick = () => {
+            // Cria um link temporário para o download
+            const link = document.createElement('a');
+            link.href = image.src;
+            link.download = 'imagem_gerada_ia.png'; // Nome do arquivo
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+        imageContainer.appendChild(downloadButton);
+        messageElement.appendChild(imageContainer);
+
+    } else if (message.startsWith('http') || message.startsWith('data:image')) {
         const image = document.createElement('img');
         image.src = message;
         image.alt = "Imagem";
         image.style.maxWidth = "100%"; 
-        if (sender === 'ai') {
-             image.style.maxWidth = "50%";
-             image.alt = "Imagem Gerada por IA";
-        }
         messageElement.appendChild(image);
+
     } else if (message.includes('```')) {
         const pre = document.createElement('pre');
         const code = document.createElement('code');
