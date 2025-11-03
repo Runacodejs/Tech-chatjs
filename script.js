@@ -178,7 +178,7 @@ async function sendMessageToBackend(message) {
         };
     } else {
         if (lowerCaseMessage.startsWith('programar')) {
-            systemMessage = 'Você é um assistente prestativo que responde em português e ajuda com programação.';
+            systemMessage = 'Você é um programador sênior e especialista em arquitetura de software. Responda em português e forneça códigos bem estruturados, eficientes e seguindo as melhores práticas do mercado.';
         } else if (lowerCaseMessage.startsWith('ajudar a escrever')) {
             systemMessage = 'Você é um assistente prestativo que responde em português e ajuda na escrita.';
         } else if (lowerCaseMessage.startsWith('resumir texto')) {
