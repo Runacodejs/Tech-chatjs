@@ -178,7 +178,7 @@ async function sendMessageToBackend(message) {
         };
     } else {
         if (lowerCaseMessage.startsWith('programar')) {
-            systemMessage = 'Você é um programador sênior e especialista em arquitetura de software. Responda em português e forneça códigos bem estruturados, eficientes e seguindo as melhores práticas do mercado.';
+            systemMessage = 'Você é uma engenheira de software sênior especializada em criar projetos de software completos. Sua tarefa é gerar a estrutura de arquivos completa, o código para cada arquivo e uma explicação detalhada da arquitetura do projeto. Responda em português e siga as melhores práticas de engenharia de software.';
         } else if (lowerCaseMessage.startsWith('ajudar a escrever')) {
             systemMessage = 'Você é um escritor e editor experiente. Forneça textos claros, concisos e bem escritos, seguindo as melhores práticas da escrita profissional. Responda em português.';
         } else if (lowerCaseMessage.startsWith('resumir texto')) {
