@@ -53,6 +53,9 @@ module.exports = async (req, res) => {
           { role: 'system', content: systemMessage || 'Você é um assistente prestativo que responde em português.' },
           ...messages
         ],
+        max_tokens: 2048, // Aumenta o limite de tokens para respostas mais longas
+        temperature: 0.7,  // Ajusta a criatividade para um bom equilíbrio
+        top_p: 0.9,        // Controla a diversidade das palavras escolhidas
       };
       openaiResponse = await fetch(endpoint, {
         method: 'POST',
