@@ -16,7 +16,7 @@ function toggleSidebar() {
 }
 document.getElementById('overlay').addEventListener('click', toggleSidebar);
 
-// Store initial content
+// Armazena o conteúdo inicial
 const mainContent = document.querySelector('.main-content');
 const initialMainContentHTML = mainContent.innerHTML;
 
@@ -65,7 +65,7 @@ function addFeatureButtonListeners() {
     });
 }
 
-addFeatureButtonListeners(); // Initial call
+addFeatureButtonListeners(); // Chamada inicial
 
 // --------------------------------------
 // Lógica para Novo Projeto / Novo Chat
@@ -78,6 +78,7 @@ function startNewChat() {
         toggleSidebar();
     }
     isWaitingForImagePrompt = false;
+    chatHistory = []; // Limpa o histórico de chat
 }
 
 const sidebarItems = document.querySelectorAll('.sidebar-item');
@@ -136,87 +137,99 @@ cameraInput.addEventListener('change', handleFileSelect);
 
 
 // --------------------------------------
-// Lógica do Chat com OpenAI
+// Lógica do Chat com o Backend
 // --------------------------------------
-let apiKey = localStorage.getItem('openai_api_key');
-
 sendButton.addEventListener('click', sendMessage);
+
+let chatHistory = []; // Array para armazenar o histórico de mensagens
 
 function sendMessage() {
     let message = chatInput.value;
-    if (!apiKey) {
-        apiKey = prompt("Por favor, insira sua chave de API da OpenAI:");
-        localStorage.setItem('openai_api_key', apiKey);
-    }
-    if (message) {
-        if (isWaitingForImagePrompt) {
-            message = `criar imagem ${message}`;
-            isWaitingForImagePrompt = false;
-        }
+    if (message.trim() === '') return;
 
-        displayMessage(message, 'user');
-        displayTypingIndicator(); // Mostra o indicador de digitação
-        sendMessageToOpenAI(message);
-        chatInput.value = '';
-        chatInput.dispatchEvent(new Event('input'));
+    if (isWaitingForImagePrompt) {
+        message = `criar imagem ${message}`;
+        isWaitingForImagePrompt = false;
     }
+
+    displayMessage(message, 'user');
+    displayTypingIndicator(); // Mostra o indicador de digitação
+
+    // Adiciona a mensagem do usuário ao histórico
+    chatHistory.push({ role: 'user', content: message });
+
+    sendMessageToBackend(message);
+    chatInput.value = '';
+    chatInput.dispatchEvent(new Event('input'));
 }
 
-async function sendMessageToOpenAI(message) {
+async function sendMessageToBackend(message) {
     const lowerCaseMessage = message.toLowerCase();
     let systemMessage = 'Você é um assistente prestativo que responde em português.';
+    let requestType = 'chat';
+    let requestBody = {};
 
     if (lowerCaseMessage.startsWith('criar imagem')) {
-        // Lida com a geração de imagem
+        requestType = 'image';
         const prompt = message.substring('criar imagem'.length).trim();
-        const response = await fetch('https://api.openai.com/v1/images/generations', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'dall-e-3',
-                prompt: prompt,
-                n: 1,
-                size: '1024x1024'
-            })
-        });
-        const data = await response.json();
-        removeTypingIndicator();
-        const imageUrl = data.data[0].url;
-        displayMessage(imageUrl, 'ai');
-        return;
-    } 
+        requestBody = {
+            type: 'image',
+            prompt: prompt
+        };
+    } else {
+        if (lowerCaseMessage.startsWith('programar')) {
+            systemMessage = 'Você é um assistente prestativo que responde em português e ajuda com programação.';
+        } else if (lowerCaseMessage.startsWith('ajudar a escrever')) {
+            systemMessage = 'Você é um assistente prestativo que responde em português e ajuda na escrita.';
+        } else if (lowerCaseMessage.startsWith('resumir texto')) {
+            systemMessage = 'Você é um assistente prestativo que responde em português e ajuda a resumir textos.';
+        } else if (lowerCaseMessage.startsWith('aconselhar')) {
+            systemMessage = 'Você é um assistente prestativo que responde em português e dá conselhos.';
+        }
 
-    if (lowerCaseMessage.startsWith('programar')) {
-        systemMessage = 'Você é um assistente prestativo que responde em português e ajuda com programação.';
-    } else if (lowerCaseMessage.startsWith('ajudar a escrever')) {
-        systemMessage = 'Você é um assistente prestativo que responde em português e ajuda na escrita.';
-    } else if (lowerCaseMessage.startsWith('resumir texto')) {
-        systemMessage = 'Você é um assistente prestativo que responde em português e ajuda a resumir textos.';
-    } else if (lowerCaseMessage.startsWith('aconselhar')) {
-        systemMessage = 'Você é um assistente prestativo que responde em português e dá conselhos.';
+        requestBody = {
+            type: 'chat',
+            messages: chatHistory,
+            systemMessage: systemMessage
+        };
     }
 
-    // Lida com a completude do chat
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
-            messages: [
-                { role: 'system', content: systemMessage },
-                { role: 'user', content: message }
-            ]
-        })
-    });
-    const data = await response.json();
-    removeTypingIndicator();
-    displayMessage(data.choices[0].message.content, 'ai');
+    try {
+        const response = await fetch('/api/index.js', { // A requisição agora é para o seu backend
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        removeTypingIndicator();
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Erro do backend:', errorData);
+            displayMessage(`Erro: ${errorData.error}`, 'ai');
+            return;
+        }
+
+        const data = await response.json();
+
+        let aiResponse;
+        if (requestType === 'image') {
+            aiResponse = data.data[0].url;
+        } else {
+            aiResponse = data.choices[0].message.content;
+            // Adiciona a resposta da IA ao histórico
+            chatHistory.push({ role: 'assistant', content: aiResponse });
+        }
+
+        displayMessage(aiResponse, 'ai');
+
+    } catch (error) {
+        removeTypingIndicator();
+        console.error('Erro ao enviar mensagem para o backend:', error);
+        displayMessage('Desculpe, não consigo me conectar ao servidor. Verifique sua conexão ou tente novamente mais tarde.', 'ai');
+    }
 }
 
 function displayMessage(message, sender) {
@@ -247,7 +260,14 @@ function displayMessage(message, sender) {
         const codeRegex = /```(.*?)```/s;
         const codeMatch = message.match(codeRegex);
         if (codeMatch) {
-            code.textContent = codeMatch[1];
+            // Extrai o conteúdo do bloco de código, removendo a linguagem (se houver)
+            let codeContent = codeMatch[1];
+            const firstLine = codeContent.split('\n')[0];
+            if (firstLine.match(/^[a-z]+$/)) {
+                codeContent = codeContent.substring(firstLine.length + 1);
+            }
+            
+            code.textContent = codeContent;
             pre.appendChild(code);
             messageElement.appendChild(pre);
 
