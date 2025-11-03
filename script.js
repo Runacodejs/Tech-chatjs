@@ -41,6 +41,8 @@ chatInput.addEventListener('input', function() {
 // Lógica dos Botões de Funcionalidade
 // --------------------------------------
 let isWaitingForImagePrompt = false;
+let isWaitingForEditPrompt = false;
+let imageForEditing = null;
 
 function addFeatureButtonListeners() {
     const featureButtons = document.querySelectorAll('.feature-button');
@@ -78,6 +80,8 @@ function startNewChat() {
         toggleSidebar();
     }
     isWaitingForImagePrompt = false;
+    isWaitingForEditPrompt = false;
+    imageForEditing = null;
     chatHistory = []; // Limpa o histórico de chat
 }
 
@@ -99,14 +103,15 @@ const addButton = document.querySelector('.add-button');
 const modal = document.getElementById('addOptionsModal');
 const modalGallery = document.getElementById('modalGallery');
 const modalCamera = document.getElementById('modalCamera');
+const modalEditImage = document.getElementById('modalEditImage');
 const galleryInput = document.getElementById('galleryInput');
 const cameraInput = document.getElementById('cameraInput');
+const editImageInput = document.getElementById('editImageInput');
 
 addButton.addEventListener('click', () => {
     modal.style.display = 'flex';
 });
 
-// Fecha o modal se o usuário clicar fora dele
 window.addEventListener('click', (event) => {
     if (event.target == modal) {
         modal.style.display = 'none';
@@ -115,12 +120,11 @@ window.addEventListener('click', (event) => {
 
 modalGallery.addEventListener('click', () => galleryInput.click());
 modalCamera.addEventListener('click', () => cameraInput.click());
+modalEditImage.addEventListener('click', () => editImageInput.click());
 
 function handleFileSelect(event) {
     const file = event.target.files[0];
-    if (!file) {
-        return;
-    }
+    if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -128,54 +132,85 @@ function handleFileSelect(event) {
     }
     reader.readAsDataURL(file);
 
-    modal.style.display = 'none'; // Esconde o modal após a seleção
-    event.target.value = ''; // Reseta o valor do input
+    modal.style.display = 'none';
+    event.target.value = '';
+}
+
+function handleImageForEditSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        imageForEditing = e.target.result; // Armazena a imagem como Base64
+        isWaitingForEditPrompt = true;
+        if (document.querySelector('h1')) {
+            mainContent.innerHTML = '';
+        }
+        displayMessage(imageForEditing, 'user');
+        displayMessage('O que você gostaria de fazer com esta imagem?', 'ai');
+    }
+    reader.readAsDataURL(file);
+
+    modal.style.display = 'none';
+    event.target.value = '';
 }
 
 galleryInput.addEventListener('change', handleFileSelect);
 cameraInput.addEventListener('change', handleFileSelect);
-
+editImageInput.addEventListener('change', handleImageForEditSelect);
 
 // --------------------------------------
 // Lógica do Chat com o Backend
 // --------------------------------------
 sendButton.addEventListener('click', sendMessage);
 
-let chatHistory = []; // Array para armazenar o histórico de mensagens
+let chatHistory = [];
 
 function sendMessage() {
-    let message = chatInput.value;
+    const message = chatInput.value;
     if (message.trim() === '') return;
 
-    if (isWaitingForImagePrompt) {
-        message = `criar imagem ${message}`;
-        isWaitingForImagePrompt = false;
+    if (isWaitingForEditPrompt) {
+        displayMessage(message, 'user');
+        displayTypingIndicator();
+        sendMessageToBackend(message, imageForEditing);
+        isWaitingForEditPrompt = false;
+        imageForEditing = null;
+    } else {
+        let finalMessage = message;
+        if (isWaitingForImagePrompt) {
+            finalMessage = `criar imagem ${message}`;
+            isWaitingForImagePrompt = false;
+        }
+        displayMessage(finalMessage, 'user');
+        displayTypingIndicator();
+        chatHistory.push({ role: 'user', content: finalMessage });
+        sendMessageToBackend(finalMessage);
     }
 
-    displayMessage(message, 'user');
-    displayTypingIndicator(); // Mostra o indicador de digitação
-
-    // Adiciona a mensagem do usuário ao histórico
-    chatHistory.push({ role: 'user', content: message });
-
-    sendMessageToBackend(message);
     chatInput.value = '';
     chatInput.dispatchEvent(new Event('input'));
 }
 
-async function sendMessageToBackend(message) {
+async function sendMessageToBackend(message, image_data = null) {
     const lowerCaseMessage = message.toLowerCase();
     let systemMessage = 'Você é um especialista altamente qualificado em sua área. Forneça respostas detalhadas, bem estruturadas e com um alto nível de conhecimento. Responda em português.';
     let requestType = 'chat';
     let requestBody = {};
 
-    if (lowerCaseMessage.startsWith('criar imagem')) {
+    if (image_data) {
+        requestType = 'image-edit';
+        systemMessage = 'Você é um especialista em edição de fotos. Sua tarefa é editar a imagem fornecida com base nas instruções do usuário. Retorne apenas a imagem editada, sem nenhum texto adicional.';
+        requestBody = {
+            type: 'image-edit',
+            image: image_data,
+            prompt: message
+        };
+    } else if (lowerCaseMessage.startsWith('criar imagem')) {
         requestType = 'image';
         const prompt = message.substring('criar imagem'.length).trim();
-        requestBody = {
-            type: 'image',
-            prompt: prompt
-        };
+        requestBody = { type: 'image', prompt: prompt };
     } else {
         if (lowerCaseMessage.startsWith('programar')) {
             systemMessage = 'Você é um programador especialista e assistente de codificação. Seu objetivo é fornecer códigos de alta qualidade, bem documentados e eficientes. Você deve ser capaz de criar desde pequenos trechos de código até projetos completos, explicar conceitos de programação e ajudar a depurar e refatorar código. Responda em português e siga as melhores práticas de desenvolvimento de software.';
@@ -186,20 +221,13 @@ async function sendMessageToBackend(message) {
         } else if (lowerCaseMessage.startsWith('aconselhar')) {
             systemMessage = 'Você é um conselheiro experiente e especialista em desenvolvimento pessoal e profissional. Forneça conselhos práticos, bem fundamentados e acionáveis. Responda em português.';
         }
-
-        requestBody = {
-            type: 'chat',
-            messages: chatHistory,
-            systemMessage: systemMessage
-        };
+        requestBody = { type: 'chat', messages: chatHistory, systemMessage: systemMessage };
     }
 
     try {
-        const response = await fetch('/api/index.js', { // A requisição agora é para o seu backend
+        const response = await fetch('/api/index.js', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody)
         });
 
@@ -215,11 +243,10 @@ async function sendMessageToBackend(message) {
         const data = await response.json();
 
         let aiResponse;
-        if (requestType === 'image') {
+        if (requestType === 'image' || requestType === 'image-edit') {
             aiResponse = data.data[0].url;
         } else {
             aiResponse = data.choices[0].message.content;
-            // Adiciona a resposta da IA ao histórico
             chatHistory.push({ role: 'assistant', content: aiResponse });
         }
 
@@ -237,20 +264,16 @@ function displayMessage(message, sender) {
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', `${sender}-message`);
 
-    if (sender === 'user') {
-        // Limpa a tela inicial se for a primeira mensagem do usuário
-        if (document.querySelector('h1')) {
-            mainContent.innerHTML = '';
-        }
+    if (sender === 'user' && document.querySelector('h1')) {
+        mainContent.innerHTML = '';
     }
 
     if ((message.startsWith('http') || message.startsWith('data:image')) && sender === 'ai') {
         const imageContainer = document.createElement('div');
         imageContainer.classList.add('image-container');
-
         const image = document.createElement('img');
         image.src = message;
-        image.alt = "Imagem Gerada por IA";
+        image.alt = "Imagem Processada por IA";
         image.style.maxWidth = "50%";
         imageContainer.appendChild(image);
 
@@ -258,10 +281,9 @@ function displayMessage(message, sender) {
         downloadButton.innerHTML = '<i class="fas fa-download"></i>';
         downloadButton.className = 'download-button';
         downloadButton.onclick = () => {
-            // Cria um link temporário para o download
             const link = document.createElement('a');
             link.href = image.src;
-            link.download = 'imagem_gerada_ia.png'; // Nome do arquivo
+            link.download = 'imagem_editada_ia.png';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -273,7 +295,7 @@ function displayMessage(message, sender) {
         const image = document.createElement('img');
         image.src = message;
         image.alt = "Imagem";
-        image.style.maxWidth = "100%"; 
+        image.style.maxWidth = "100%";
         messageElement.appendChild(image);
 
     } else if (message.includes('```')) {
@@ -282,13 +304,11 @@ function displayMessage(message, sender) {
         const codeRegex = /```(.*?)```/s;
         const codeMatch = message.match(codeRegex);
         if (codeMatch) {
-            // Extrai o conteúdo do bloco de código, removendo a linguagem (se houver)
             let codeContent = codeMatch[1];
             const firstLine = codeContent.split('\n')[0];
             if (firstLine.match(/^[a-z]+$/)) {
                 codeContent = codeContent.substring(firstLine.length + 1);
             }
-            
             code.textContent = codeContent;
             pre.appendChild(code);
             messageElement.appendChild(pre);
@@ -299,9 +319,7 @@ function displayMessage(message, sender) {
             copyButton.onclick = () => {
                 navigator.clipboard.writeText(code.textContent);
                 copyButton.textContent = 'Copiado!';
-                setTimeout(() => {
-                    copyButton.textContent = 'Copiar';
-                }, 2000);
+                setTimeout(() => { copyButton.textContent = 'Copiar'; }, 2000);
             };
             messageElement.appendChild(copyButton);
         }
@@ -316,7 +334,7 @@ function displayMessage(message, sender) {
 function displayTypingIndicator() {
     const mainContent = document.querySelector('.main-content');
     if (document.querySelector('h1')) {
-            mainContent.innerHTML = '';
+        mainContent.innerHTML = '';
     }
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', 'typing-indicator-container');
