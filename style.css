@@ -9,27 +9,47 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    min-height: 100vh;
+    height: 100vh; /* Changed from min-height to height */
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    overflow-x: hidden;
+    overflow: hidden; /* Prevent body from scrolling */
     position: relative;
 }
 
-/* Chat Messages */
-.main-content {
-    overflow-y: auto; /* Make chat scrollable */
-    flex-grow: 1;
+/* -------------------------------------- */
+/* Page & Main Content Layout */
+/* -------------------------------------- */
+.page-container {
+    width: 100%;
     display: flex;
     flex-direction: column;
-    width: 100%;
-    max-width: 800px; /* Limit chat width */
-    padding: 20px;
-    padding-bottom: 120px; /* Add padding to the bottom */
+    align-items: center;
+    flex-grow: 1;
+    overflow: hidden; /* Contain children */
 }
 
+.main-content {
+    flex-grow: 1;
+    width: 100%;
+    max-width: 800px; 
+    padding: 20px;
+    padding-bottom: 140px; /* Increased padding for bottom bar */
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Make chat scrollable */
+    scroll-behavior: smooth; /* Smooth scrolling */
+}
+
+.main-content h1 {
+    font-size: 28px;
+    margin-bottom: 40px;
+    color: #fff;
+}
+
+/* -------------------------------------- */
+/* Chat Message Styles */
+/* -------------------------------------- */
 .message {
     padding: 10px 15px;
     border-radius: 18px;
@@ -37,6 +57,7 @@ body {
     max-width: 70%;
     line-height: 1.5;
     position: relative;
+    word-wrap: break-word; /* Ensure long words don't overflow */
 }
 
 .user-message {
@@ -51,6 +72,14 @@ body {
     align-self: flex-start;
 }
 
+.message pre {
+    white-space: pre-wrap; /* Wrap code blocks */
+    word-wrap: break-word;
+    background-color: #111;
+    padding: 10px;
+    border-radius: 8px;
+}
+
 .copy-button {
     position: absolute;
     top: 5px;
@@ -61,6 +90,12 @@ body {
     padding: 5px 10px;
     border-radius: 5px;
     cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.message:hover .copy-button {
+    opacity: 1;
 }
 
 .copy-button:hover {
@@ -88,14 +123,19 @@ body {
     justify-content: center;
 }
 
+/* -------------------------------------- */
 /* Typing Indicator */
+/* -------------------------------------- */
 .typing-indicator-container {
     align-self: flex-start;
+    margin: 0 0 10px 0;
 }
 
 .typing-indicator {
     display: flex;
     padding: 10px;
+    background-color: #222;
+    border-radius: 18px;
 }
 
 .typing-indicator span {
@@ -217,16 +257,8 @@ body {
 }
 
 /* -------------------------------------- */
-/* Main Content Styles */
+/* Top Bar Styles */
 /* -------------------------------------- */
-.page-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-grow: 1;
-}
-
 .top-bar {
     width: 100%;
     display: flex;
@@ -235,6 +267,7 @@ body {
     padding: 20px 20px 0 20px;
     max-width: 800px;
     box-sizing: border-box;
+    flex-shrink: 0; /* Prevent top bar from shrinking */
 }
 
 .top-bar .menu-icon {
@@ -267,12 +300,9 @@ body {
     cursor: pointer;
 }
 
-.main-content h1 {
-    font-size: 28px;
-    margin-bottom: 40px;
-    color: #fff;
-}
-
+/* -------------------------------------- */
+/* Feature Grid (Initial Screen) */
+/* -------------------------------------- */
 .feature-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -290,7 +320,7 @@ body {
     font-size: 15px;
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Align text to the left */
+    justify-content: flex-start;
     gap: 8px;
     cursor: pointer;
     text-align: left;
@@ -302,7 +332,7 @@ body {
 }
 
 /* -------------------------------------- */
-/* Bottom Bar Styles */
+/* Bottom Bar & Input Styles */
 /* -------------------------------------- */
 .bottom-bar {
     width: 100%;
@@ -313,8 +343,9 @@ body {
     align-items: center;
     justify-content: center;
     padding: 15px 20px;
-    background-color: #000;
+    background-color: #000; /* To prevent content from showing through */
     box-sizing: border-box;
+    flex-shrink: 0; /* Prevent bottom bar from shrinking */
 }
 
 .bottom-bar .add-button {
@@ -340,7 +371,7 @@ body {
     border-radius: 25px;
     padding: 8px 15px;
     max-width: 800px;
-    position: relative; /* For positioning the send button */
+    position: relative;
 }
 
 .bottom-bar input[type="text"] {
@@ -351,7 +382,7 @@ body {
     font-size: 16px;
     padding: 5px 0;
     outline: none;
-    padding-right: 70px; /* Space for icons */
+    padding-right: 70px; 
 }
 
 .bottom-bar input[type="text"]::placeholder {
@@ -361,7 +392,7 @@ body {
 .voice-icons {
     display: flex;
     position: absolute;
-    right: 60px; /* Adjusted position */
+    right: 60px;
 }
 
 .bottom-bar .mic-icon,
@@ -384,7 +415,7 @@ body {
     width: 32px;
     height: 32px;
     font-size: 16px;
-    display: none; /* Hidden by default */
+    display: none; 
     align-items: center;
     justify-content: center;
     cursor: pointer;
@@ -456,32 +487,21 @@ body {
 /* Responsividade */
 /* -------------------------------------- */
 
-/* Notebook e Telas Maiores */
 @media (min-width: 769px) {
     .feature-grid {
         grid-template-columns: repeat(3, 1fr);
     }
-
     .main-content h1 {
         font-size: 36px;
     }
 }
 
-/* Tablets */
-@media (min-width: 481px) and (max-width: 768px) {
-    .feature-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-     .main-content {
-        padding: 15px;
-    }
-
-    .bottom-bar .search-input-container {
-        max-width: 90%;
+@media (max-width: 768px) {
+    .main-content {
+        padding-bottom: 120px; /* Adjust for smaller screens */
     }
 }
 
-/* Celulares */
 @media (max-width: 480px) {
     body {
         -webkit-text-size-adjust: 100%;
@@ -492,17 +512,8 @@ body {
         transform: translateX(-100%);
     }
 
-    .top-bar {
-        padding: 15px;
-    }
-
-    .top-bar .upgrade-button {
-        padding: 8px 12px;
-        font-size: 14px;
-    }
-
     .main-content {
-        padding: 10px;
+        padding-bottom: 100px; /* Adjust for mobile */
     }
 
     .main-content h1 {
@@ -517,17 +528,10 @@ body {
 
     .message {
         max-width: 90%; 
-        padding: 8px 12px;
     }
     
     .bottom-bar {
         padding: 10px;
-    }
-
-    .bottom-bar .add-button {
-         width: 40px;
-         height: 40px;
-         font-size: 20px;
     }
 
     .bottom-bar .search-input-container {
@@ -535,18 +539,14 @@ body {
     }
     
     .bottom-bar input[type="text"] {
-        font-size: 15px;
         padding-right: 60px; 
     }
 
     .send-button {
-        right: 10px; /* Adjust position for smaller screens */
-        width: 30px;
-        height: 30px;
-        font-size: 14px;
+        right: 10px; 
     }
 
     .voice-icons {
-        right: 50px; /* Adjust position for smaller screens */
+        right: 50px; 
     }
 }
