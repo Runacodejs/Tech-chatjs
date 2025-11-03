@@ -1,6 +1,6 @@
 
 // --------------------------------------
-// Lógica da Sidebar (Mantido)
+// Lógica da Sidebar
 // --------------------------------------
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -27,7 +27,6 @@ const chatInput = document.getElementById('chatInput');
 const sendButton = document.getElementById('sendButton');
 const voiceIcons = document.getElementById('voiceIcons');
 
-// Monitora a entrada de texto
 chatInput.addEventListener('input', function() {
     if (chatInput.value.trim().length > 0) {
         sendButton.style.display = 'flex'; 
@@ -89,8 +88,49 @@ sidebarItems.forEach(item => {
     }
 });
 
+// --------------------------------------
+// Lógica do Botão '+' e Modal
+// --------------------------------------
 const addButton = document.querySelector('.add-button');
-addButton.addEventListener('click', startNewChat);
+const modal = document.getElementById('addOptionsModal');
+const modalGallery = document.getElementById('modalGallery');
+const modalCamera = document.getElementById('modalCamera');
+const galleryInput = document.getElementById('galleryInput');
+const cameraInput = document.getElementById('cameraInput');
+
+addButton.addEventListener('click', () => {
+    modal.style.display = 'flex';
+});
+
+// Fecha o modal se o usuário clicar fora dele
+window.addEventListener('click', (event) => {
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+});
+
+modalGallery.addEventListener('click', () => galleryInput.click());
+modalCamera.addEventListener('click', () => cameraInput.click());
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        displayMessage(e.target.result, 'user');
+    }
+    reader.readAsDataURL(file);
+
+    modal.style.display = 'none'; // Esconde o modal após a seleção
+    event.target.value = ''; // Reseta o valor do input
+}
+
+galleryInput.addEventListener('change', handleFileSelect);
+cameraInput.addEventListener('change', handleFileSelect);
+
 
 // --------------------------------------
 // Lógica do Chat com OpenAI
@@ -107,7 +147,7 @@ function sendMessage() {
     }
     if (message) {
         displayMessage(message, 'user');
-        displayTypingIndicator(); // Show typing indicator
+        displayTypingIndicator(); // Mostra o indicador de digitação
         sendMessageToOpenAI(message);
         chatInput.value = '';
     }
@@ -118,7 +158,7 @@ async function sendMessageToOpenAI(message) {
     let systemMessage = 'Você é um assistente prestativo que responde em português.';
 
     if (lowerCaseMessage.startsWith('criar imagem')) {
-        // Handle image generation
+        // Lida com a geração de imagem
         const prompt = message.substring('criar imagem'.length).trim();
         const response = await fetch('https://api.openai.com/v1/images/generations', {
             method: 'POST',
@@ -134,7 +174,7 @@ async function sendMessageToOpenAI(message) {
             })
         });
         const data = await response.json();
-        removeTypingIndicator(); // Remove typing indicator
+        removeTypingIndicator();
         const imageUrl = data.data[0].url;
         displayMessage(imageUrl, 'ai');
         return;
@@ -150,7 +190,7 @@ async function sendMessageToOpenAI(message) {
         systemMessage = 'Você é um assistente prestativo que responde em português e dá conselhos.';
     }
 
-    // Handle chat completion
+    // Lida com a completude do chat
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -166,7 +206,7 @@ async function sendMessageToOpenAI(message) {
         })
     });
     const data = await response.json();
-    removeTypingIndicator(); // Remove typing indicator
+    removeTypingIndicator();
     displayMessage(data.choices[0].message.content, 'ai');
 }
 
@@ -176,17 +216,21 @@ function displayMessage(message, sender) {
     messageElement.classList.add('message', `${sender}-message`);
 
     if (sender === 'user') {
-        // Clear initial screen if it's the first user message
+        // Limpa a tela inicial se for a primeira mensagem do usuário
         if (document.querySelector('h1')) {
             mainContent.innerHTML = '';
         }
     }
 
-    if (message.startsWith('http')) {
+    if (message.startsWith('http') || message.startsWith('data:image')) {
         const image = document.createElement('img');
         image.src = message;
-        image.alt = "Generated AI Image";
-        image.style.maxWidth = "50%";
+        image.alt = "Imagem";
+        image.style.maxWidth = "100%"; 
+        if (sender === 'ai') {
+             image.style.maxWidth = "50%";
+             image.alt = "Imagem Gerada por IA";
+        }
         messageElement.appendChild(image);
     } else if (message.includes('```')) {
         const pre = document.createElement('pre');
@@ -220,7 +264,6 @@ function displayMessage(message, sender) {
 
 function displayTypingIndicator() {
     const mainContent = document.querySelector('.main-content');
-    // Clear initial screen if it's showing
     if (document.querySelector('h1')) {
             mainContent.innerHTML = '';
     }

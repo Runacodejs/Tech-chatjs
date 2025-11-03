@@ -27,6 +27,7 @@ body {
     width: 100%;
     max-width: 800px; /* Limit chat width */
     padding: 20px;
+    padding-bottom: 120px; /* Add padding to the bottom */
 }
 
 .message {
@@ -102,12 +103,8 @@ body {
     }
 }
 
-
-/* Other styles remain the same */
-
-
 /* -------------------------------------- */
-/* Sidebar Styles (Mantido) */
+/* Sidebar Styles */
 /* -------------------------------------- */
 .sidebar {
     height: 100%;
@@ -199,9 +196,8 @@ body {
 }
 
 /* -------------------------------------- */
-/* Main Content Styles (Mantido) */
+/* Main Content Styles */
 /* -------------------------------------- */
-
 .page-container {
     width: 100%;
     display: flex;
@@ -216,6 +212,8 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 20px 20px 0 20px;
+    max-width: 800px;
+    box-sizing: border-box;
 }
 
 .top-bar .menu-icon {
@@ -258,8 +256,8 @@ body {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
-    max-width: 400px;
     width: 100%;
+    max-width: 600px;
 }
 
 .feature-button {
@@ -271,7 +269,7 @@ body {
     font-size: 15px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start; /* Align text to the left */
     gap: 8px;
     cursor: pointer;
     text-align: left;
@@ -282,23 +280,20 @@ body {
     background-color: #333;
 }
 
-.feature-button.more {
-    background-color: #222;
-    color: #fff;
-    font-size: 15px;
-    padding: 15px 10px;
-}
-
 /* -------------------------------------- */
-/* Bottom Bar Styles - Novo e Revisado */
+/* Bottom Bar Styles */
 /* -------------------------------------- */
 .bottom-bar {
     width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 15px 20px;
     background-color: #000;
+    box-sizing: border-box;
 }
 
 .bottom-bar .add-button {
@@ -323,8 +318,8 @@ body {
     background-color: #222;
     border-radius: 25px;
     padding: 8px 15px;
-    max-width: 450px;
-    position: relative; /* Para posicionar o botão de envio */
+    max-width: 800px;
+    position: relative; /* For positioning the send button */
 }
 
 .bottom-bar input[type="text"] {
@@ -335,20 +330,17 @@ body {
     font-size: 16px;
     padding: 5px 0;
     outline: none;
-    /* Mais padding à direita para evitar que o texto fique embaixo dos botões de voz/onda */
-    padding-right: 70px; 
+    padding-right: 70px; /* Space for icons */
 }
 
 .bottom-bar input[type="text"]::placeholder {
     color: #888;
 }
 
-/* Contêiner dos ícones de voz/onda */
 .voice-icons {
     display: flex;
     position: absolute;
-    right: 15px;
-    /* Garantir que esteja visível por padrão */
+    right: 60px; /* Adjusted position */
 }
 
 .bottom-bar .mic-icon,
@@ -361,30 +353,179 @@ body {
     cursor: pointer;
 }
 
-/* Botão de Enviar (Seta) */
 .send-button {
     position: absolute;
     right: 15px;
-    background-color: #fff; /* Fundo branco */
-    color: #000; /* Seta preta */
+    background-color: #fff;
+    color: #000;
     border: none;
     border-radius: 50%;
     width: 32px;
     height: 32px;
     font-size: 16px;
-    display: none; /* ❌ Escondido por padrão */
+    display: none; /* Hidden by default */
     align-items: center;
     justify-content: center;
     cursor: pointer;
 }
 
-/* Responsividade básica (Mantido) */
+/* -------------------------------------- */
+/* Modal Styles */
+/* -------------------------------------- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 30;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.modal-content {
+    background-color: #1c1c1c;
+    margin: 0 auto 80px;
+    padding: 20px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    display: flex;
+    justify-content: space-around;
+    animation-name: slideUp;
+    animation-duration: 0.3s;
+}
+
+@keyframes slideUp {
+    from {transform: translateY(100px); opacity: 0}
+    to {transform: translateY(0); opacity: 1}
+}
+
+.modal-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    color: #fff;
+    font-size: 14px;
+}
+
+.modal-item i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    background-color: #333;
+    padding: 15px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-item:hover {
+    opacity: 0.8;
+}
+
+/* -------------------------------------- */
+/* Responsividade */
+/* -------------------------------------- */
+
+/* Notebook e Telas Maiores */
+@media (min-width: 769px) {
+    .feature-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .main-content h1 {
+        font-size: 36px;
+    }
+}
+
+/* Tablets */
+@media (min-width: 481px) and (max-width: 768px) {
+    .feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+     .main-content {
+        padding: 15px;
+    }
+
+    .bottom-bar .search-input-container {
+        max-width: 90%;
+    }
+}
+
+/* Celulares */
 @media (max-width: 480px) {
+    body {
+        -webkit-text-size-adjust: 100%;
+    }
+    
+    .sidebar {
+        width: 100%; 
+        transform: translateX(-100%);
+    }
+
+    .top-bar {
+        padding: 15px;
+    }
+
+    .top-bar .upgrade-button {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .main-content {
+        padding: 10px;
+    }
+
+    .main-content h1 {
+        font-size: 24px;
+        margin-bottom: 30px;
+    }
+
     .feature-grid {
         grid-template-columns: 1fr;
+        gap: 10px;
     }
-    .top-bar .upgrade-button {
-        padding: 8px 15px;
+
+    .message {
+        max-width: 90%; 
+        padding: 8px 12px;
+    }
+    
+    .bottom-bar {
+        padding: 10px;
+    }
+
+    .bottom-bar .add-button {
+         width: 40px;
+         height: 40px;
+         font-size: 20px;
+    }
+
+    .bottom-bar .search-input-container {
+        padding: 5px 10px;
+    }
+    
+    .bottom-bar input[type="text"] {
+        font-size: 15px;
+        padding-right: 60px; 
+    }
+
+    .send-button {
+        right: 10px; /* Adjust position for smaller screens */
+        width: 30px;
+        height: 30px;
         font-size: 14px;
+    }
+
+    .voice-icons {
+        right: 50px; /* Adjust position for smaller screens */
     }
 }
