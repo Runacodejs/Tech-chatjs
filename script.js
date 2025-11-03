@@ -16,6 +16,9 @@ function toggleSidebar() {
 }
 document.getElementById('overlay').addEventListener('click', toggleSidebar);
 
+// Store initial content
+const mainContent = document.querySelector('.main-content');
+const initialMainContentHTML = mainContent.innerHTML;
 
 // --------------------------------------
 // Lógica do Botão de Envio
@@ -38,26 +41,56 @@ chatInput.addEventListener('input', function() {
 // --------------------------------------
 // Lógica dos Botões de Funcionalidade
 // --------------------------------------
-const featureButtons = document.querySelectorAll('.feature-button');
+function addFeatureButtonListeners() {
+    const featureButtons = document.querySelectorAll('.feature-button');
 
-featureButtons.forEach(button => {
-    button.addEventListener('click', (event) => {
-        const featureText = event.currentTarget.textContent.trim();
+    featureButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            const featureText = event.currentTarget.textContent.trim();
 
-        if (featureText === 'Criar imagem') {
-            const imagePrompt = prompt("O que você gostaria de criar?");
-            if (imagePrompt) {
-                chatInput.value = `criar imagem ${imagePrompt}`;
+            if (featureText === 'Criar imagem') {
+                const imagePrompt = prompt("O que você gostaria de criar?");
+                if (imagePrompt) {
+                    chatInput.value = `criar imagem ${imagePrompt}`;
+                    chatInput.dispatchEvent(new Event('input'));
+                    sendMessage();
+                }
+            } else {
+                chatInput.value = featureText;
                 chatInput.dispatchEvent(new Event('input'));
                 sendMessage();
             }
-        } else {
-            chatInput.value = featureText;
-            chatInput.dispatchEvent(new Event('input'));
-            sendMessage();
-        }
+        });
     });
+}
+
+addFeatureButtonListeners(); // Initial call
+
+// --------------------------------------
+// Lógica para Novo Projeto / Novo Chat
+// --------------------------------------
+function startNewChat() {
+    mainContent.innerHTML = initialMainContentHTML;
+    addFeatureButtonListeners();
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar.classList.contains('open')) {
+        toggleSidebar();
+    }
+}
+
+const sidebarItems = document.querySelectorAll('.sidebar-item');
+sidebarItems.forEach(item => {
+    const itemText = item.textContent.trim();
+    if (itemText === 'Novo projeto' || itemText === 'Novo chat') {
+        item.addEventListener('click', (event) => {
+            event.preventDefault();
+            startNewChat();
+        });
+    }
 });
+
+const addButton = document.querySelector('.add-button');
+addButton.addEventListener('click', startNewChat);
 
 // --------------------------------------
 // Lógica do Chat com OpenAI
@@ -142,6 +175,13 @@ function displayMessage(message, sender) {
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', `${sender}-message`);
 
+    if (sender === 'user') {
+        // Clear initial screen if it's the first user message
+        if (document.querySelector('h1')) {
+            mainContent.innerHTML = '';
+        }
+    }
+
     if (message.startsWith('http')) {
         const image = document.createElement('img');
         image.src = message;
@@ -180,6 +220,10 @@ function displayMessage(message, sender) {
 
 function displayTypingIndicator() {
     const mainContent = document.querySelector('.main-content');
+    // Clear initial screen if it's showing
+    if (document.querySelector('h1')) {
+            mainContent.innerHTML = '';
+    }
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', 'typing-indicator-container');
     messageElement.innerHTML = `
