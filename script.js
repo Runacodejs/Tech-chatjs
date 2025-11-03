@@ -40,6 +40,8 @@ chatInput.addEventListener('input', function() {
 // --------------------------------------
 // Lógica dos Botões de Funcionalidade
 // --------------------------------------
+let isWaitingForImagePrompt = false;
+
 function addFeatureButtonListeners() {
     const featureButtons = document.querySelectorAll('.feature-button');
 
@@ -47,13 +49,13 @@ function addFeatureButtonListeners() {
         button.addEventListener('click', (event) => {
             const featureText = event.currentTarget.textContent.trim();
 
+            if (document.querySelector('h1')) {
+                mainContent.innerHTML = '';
+            }
+
             if (featureText === 'Criar imagem') {
-                const imagePrompt = prompt("O que você gostaria de criar?");
-                if (imagePrompt) {
-                    chatInput.value = `criar imagem ${imagePrompt}`;
-                    chatInput.dispatchEvent(new Event('input'));
-                    sendMessage();
-                }
+                displayMessage('Que imagem eu quero gerar?', 'ai');
+                isWaitingForImagePrompt = true;
             } else {
                 chatInput.value = featureText;
                 chatInput.dispatchEvent(new Event('input'));
@@ -75,6 +77,7 @@ function startNewChat() {
     if (sidebar.classList.contains('open')) {
         toggleSidebar();
     }
+    isWaitingForImagePrompt = false;
 }
 
 const sidebarItems = document.querySelectorAll('.sidebar-item');
@@ -140,16 +143,22 @@ let apiKey = localStorage.getItem('openai_api_key');
 sendButton.addEventListener('click', sendMessage);
 
 function sendMessage() {
-    const message = chatInput.value;
+    let message = chatInput.value;
     if (!apiKey) {
         apiKey = prompt("Por favor, insira sua chave de API da OpenAI:");
         localStorage.setItem('openai_api_key', apiKey);
     }
     if (message) {
+        if (isWaitingForImagePrompt) {
+            message = `criar imagem ${message}`;
+            isWaitingForImagePrompt = false;
+        }
+
         displayMessage(message, 'user');
         displayTypingIndicator(); // Mostra o indicador de digitação
         sendMessageToOpenAI(message);
         chatInput.value = '';
+        chatInput.dispatchEvent(new Event('input'));
     }
 }
 
