@@ -165,7 +165,7 @@ function sendMessage() {
 
 async function sendMessageToBackend(message) {
     const lowerCaseMessage = message.toLowerCase();
-    let systemMessage = 'Você é um assistente prestativo que responde em português.';
+    let systemMessage = 'Você é um especialista altamente qualificado em sua área. Forneça respostas detalhadas, bem estruturadas e com um alto nível de conhecimento. Responda em português.';
     let requestType = 'chat';
     let requestBody = {};
 
@@ -180,11 +180,11 @@ async function sendMessageToBackend(message) {
         if (lowerCaseMessage.startsWith('programar')) {
             systemMessage = 'Você é um programador sênior e especialista em arquitetura de software. Responda em português e forneça códigos bem estruturados, eficientes e seguindo as melhores práticas do mercado.';
         } else if (lowerCaseMessage.startsWith('ajudar a escrever')) {
-            systemMessage = 'Você é um assistente prestativo que responde em português e ajuda na escrita.';
+            systemMessage = 'Você é um escritor e editor experiente. Forneça textos claros, concisos e bem escritos, seguindo as melhores práticas da escrita profissional. Responda em português.';
         } else if (lowerCaseMessage.startsWith('resumir texto')) {
-            systemMessage = 'Você é um assistente prestativo que responde em português e ajuda a resumir textos.';
+            systemMessage = 'Você é um especialista em análise e síntese de informações. Forneça resumos precisos e informativos, destacando os pontos-chave do texto. Responda em português.';
         } else if (lowerCaseMessage.startsWith('aconselhar')) {
-            systemMessage = 'Você é um assistente prestativo que responde em português e dá conselhos.';
+            systemMessage = 'Você é um conselheiro experiente e especialista em desenvolvimento pessoal e profissional. Forneça conselhos práticos, bem fundamentados e acionáveis. Responda em português.';
         }
 
         requestBody = {
